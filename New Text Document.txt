@@ -1,0 +1,97 @@
+rm(list=ls())
+
+library(cluster)
+library(dplyr)
+
+head(votes.repub)
+means <- NA
+for (i in 1:nrow(votes.repub)) {
+  means[i] <- mean(as.numeric(votes.repub[i,]),na.rm = T)
+  
+}
+
+means
+votes <- votes.repub
+for (i in 1:50) {
+  for(l in 1:ncol(votes)){
+    if(is.na(votes[i,l])==T){
+      votes[i,l] <- means[i]
+    }
+  }
+}
+head(votes)
+
+#PCA
+## Pca code
+apply(votes,2,mean)
+apply(votes,2,var)
+pr.out <- prcomp(votes,scale = TRUE)
+pr.out$rotation
+dim(pr.out$x)
+biplot(pr.out, scale=0)
+
+#biplot(pr.out, choices = c(1,3), scale = 0)
+#Where 1 and 3 are the PCs you want to plot.This is done when to plot with pc1 and pc3 or pc4 with pc5
+
+pr.out$rotation =-pr.out$rotation
+pr.out$x <- -pr.out$x
+biplot(pr.out, scale = 0)
+pr.out$sdev
+pr.var <- pr.out$sdev ^2
+pr.var
+pve <- pr.var/sum(pr.var)  #  proportion of variance
+pve
+plot(pve,xlab = "Principal components",  ylab = "Proportion of variance explainedd",ylim = c(0,1),type="b")
+plot(cumsum(pve),xlab="Principal components", ylab = "Cumm. Proportion of variance explainedd",ylim = c(0,1),type="b")
+
+plot(votes$X1856,type = "b")
+
+#dbscan
+
+library(dbscan)
+
+
+data_vote <- as.matrix(votes)
+
+res <- dbscan(data_vote,eps = 0.4,minPts = 4) # keep trying diff eps and minpoints value till u find optimum cluster and min noise
+res # 0 is noise
+
+res$cluster
+
+plot(y=res$cluster,x=,xlab=iris$Species)
+
+
+
+
+#kmeans
+
+grpVotes <- kmeans(votes,centers = 3)
+
+#to make cluster assignment on data
+
+o <- order(grpVotes$cluster)
+voteGroup <- data.frame(grpVotes$cluster[o])
+
+names(voteGroup)
+
+
+#Heirachial cluster
+
+Voteagg <- agnes(votes,diss=FALSE,metric="euclidian")
+plot(Voteagg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
